@@ -4,7 +4,7 @@ import os
 
 load_dotenv()
 
-from retriever import get_retriever, keyword_search
+from retriever import get_retriever
 from generator import generate_answer
 from verifier import verify_answer
 from evaluator import evaluate
@@ -21,11 +21,8 @@ if st.button("Run") and query:
 
     dense_docs = retriever.invoke(query)
     dense_context = " ".join([doc.page_content for doc in dense_docs])
-
-    keyword_docs = keyword_search(query, docs)
-    keyword_context = " ".join(keyword_docs)
-
-    context = dense_context + " " + keyword_context
+    
+    context = dense_context
 
     # Without verification
     answer_no_verification = generate_answer(query, context)
@@ -51,3 +48,4 @@ if st.button("Run") and query:
 
     st.markdown("### Retrieved Context (for transparency)")
     st.write(context)
+    
