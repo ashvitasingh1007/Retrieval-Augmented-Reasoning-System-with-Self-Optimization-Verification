@@ -1,50 +1,44 @@
 import streamlit as st
 from dotenv import load_dotenv
-import os
-
-load_dotenv()
 
 from retriever import get_retriever
 from generator import generate_answer
 from verifier import verify_answer
 from evaluator import evaluate
 
-st.set_page_config(page_title="RAG Reasoning Demo", layout="wide")
+load_dotenv()
 
 st.title("Retrieval-Augmented Reasoning System")
-st.write("Enter a query and see how retrieval, generation, and verification work together.")
 
-query = st.text_input("Enter your question:")
+# Load retriever once
+retriever, docs = get_retriever()
 
-if st.button("Run") and query:
-    retriever, docs = get_retriever()
+query = st.text_input("Enter your question")
 
+if query:
+    # Retrieve context
     dense_docs = retriever.invoke(query)
     dense_context = " ".join([doc.page_content for doc in dense_docs])
-    
+
     context = dense_context
 
-    # Without verification
-    answer_no_verification = generate_answer(query, context)
-
-    # With verification
+    # Generate answer
     answer = generate_answer(query, context)
-    verification = verify_answer(answer, context)
+
+    # Verify
+    verification = verify_answer(query, answer, context)
+
+    # Evaluate
     score = evaluate(answer, context)
 
-    st.subheader("Results")
+    st.markdown("### Answer")
+    st.write(answer)
 
-    col1, col2 = st.columns(2)
+    st.markdown("### Verification")
+    st.write(verification)
 
-    with col1:
-        st.markdown("### Without Verification")
-        st.write(answer_no_verification)
-
-    with col2:
-        st.markdown("### With Verification")
-        st.write(answer)
-        st.write(f"**Verification:** {verification}")
-        st.write(f"**Score:** {score}")
+    st.markdown("### Score")
+    st.write(score)
 
     st.markdown("### Retrieved Context (for transparency)")
     st.write(context)
